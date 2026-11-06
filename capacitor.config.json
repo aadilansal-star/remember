@@ -1,0 +1,9 @@
+{
+ "appId": "com.aadil.remember",
+ "appName": "Remember",
+ "webDir": "www",
+ "android": {
+  "adjustMarginsForEdgeToEdge": "auto",
+  "backgroundColor": "#faf8f4"
+ }
+}

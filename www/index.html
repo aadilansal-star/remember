@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remember</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#faf8f4;--card:#fff;--ink:#1f1e1c;--mut:#7a766f;--line:#e8e4dc;--soft:#f1ede5;--acc:#2b2a27;--accI:#faf8f4;--ok:#4f7a5a;--warn:#a8643a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#151412;--card:#1d1c1a;--ink:#efece6;--mut:#9a958c;--line:#2f2d29;--soft:#242220;--acc:#efece6;--accI:#151412;--ok:#8fb89a;--warn:#d9976a}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#151412;--card:#1d1c1a;--ink:#efece6;--mut:#9a958c;--line:#2f2d29;--soft:#242220;--acc:#efece6;--accI:#151412;--ok:#8fb89a;--warn:#d9976a}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:640px;margin:0 auto;padding:28px 20px 120px;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1,h2,.serif{font-family:Fraunces,Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.01em}
+h1{font-size:2.1rem;margin:12px 0 2px;line-height:1.15}h2{font-size:1.5rem;margin:0}h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);font-weight:500;margin:30px 0 10px}
+.sub,.mut{color:var(--mut)}.sub{margin:0 0 22px}
+.btn{font:inherit;font-weight:500;background:var(--acc);color:var(--accI);border:0;border-radius:14px;padding:11px 20px;cursor:pointer;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.98)}.btn:disabled{opacity:.5;cursor:default}
+.btn.big{width:100%;padding:18px;font-size:1.05rem;border-radius:18px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-top:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.item{display:flex;align-items:baseline;gap:12px;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;margin-bottom:8px;cursor:pointer}
+.item:hover{border-color:var(--mut)}.item .t{font-weight:500}.item .m{color:var(--mut);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.92rem}.item i{font-style:normal;font-size:.75rem;color:var(--mut)}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;outline:none}
+input:focus,textarea:focus{border-color:var(--mut)}textarea{min-height:130px;resize:vertical}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 14px;scrollbar-width:none}
+.chip{font:inherit;font-size:.85rem;white-space:nowrap;background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:99px;padding:5px 14px;cursor:pointer}.chip.on{background:var(--acc);color:var(--accI);border-color:var(--acc)}
+nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px;box-shadow:0 6px 24px rgba(0,0,0,.08)}
+nav button{font:inherit;font-size:.9rem;border:0;background:transparent;color:var(--mut);padding:9px 18px;border-radius:99px;cursor:pointer}nav button.on{background:var(--acc);color:var(--accI)}
+#sheet{position:fixed;inset:0;background:rgba(20,18,15,.4);display:none;align-items:flex-end;justify-content:center;z-index:20}#sheet.open{display:flex}
+.panel{background:var(--bg);width:100%;max-width:640px;max-height:92%;overflow:auto;border-radius:24px 24px 0 0;padding:24px 22px calc(24px + env(safe-area-inset-bottom,0px));animation:in .25s ease}
+@media(min-width:700px){#sheet{align-items:center}.panel{border-radius:24px;max-height:86%}}
+.f{margin-top:16px}.f label{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin-bottom:4px}.f p{margin:0}.ex{color:var(--ink);border-left:2px solid var(--line);padding-left:12px;margin:4px 0!important}
+.warn{color:var(--warn)}.lead{font-size:1.15rem;margin:14px 0 0}
+.q{text-align:center;padding:36px 8px 10px}.q .term{font-size:2.5rem;line-height:1.15;margin:10px 0}.q .ask{color:var(--mut);font-size:.9rem}
+.opt{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;margin-top:9px;cursor:pointer}.opt.good{border-color:var(--ok);background:var(--soft)}.opt.bad{border-color:var(--warn)}
+.grade{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.bar{height:3px;background:var(--line);border-radius:3px;margin:6px 0 4px}.bar i{display:block;height:100%;background:var(--acc);border-radius:3px;transition:width .3s}
+#toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--acc);color:var(--accI);padding:10px 18px;border-radius:14px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:30;max-width:90%}#toast.on{opacity:1}
+.x{background:none;border:0;color:var(--mut);font:inherit;cursor:pointer;padding:4px}
+</style><meta name="theme-color" content="#faf8f4"></head><body>
+<main id="main"><p class="mut">Opening…</p></main>
+<nav id="nav"><button data-a="nav" data-v="home">Home</button><button data-a="nav" data-v="coll">My Collection</button><button data-a="nav" data-v="rev">Review</button></nav>
+<div id="sheet" data-a="bg"></div><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),DAY=864e5;
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let E=[],S={remindOn:false,remindAt:'19:00'},col=null,ai=null,dl=null,view='home',filter='all',q='',RV=null;
+/* ---------- storage: private per-user db, local fallback ---------- */
+const clean=o=>JSON.parse(JSON.stringify(o));
+const ls=()=>{try{localStorage.setItem('remember',JSON.stringify({E,S}))}catch{}};
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),bad?5000:2600)}
+async function init(){
+ await load();render();remind();setInterval(ping,30000);
+}
+async function load(){
+ if(col){try{const s=await Promise.race([col.get(),new Promise((_,r)=>setTimeout(()=>r(0),10000))]);E=[];s.docs.forEach(d=>{const x=d.data();d.id==='settings'?S={...S,...x}:E.push(x)});E.sort((a,b)=>b.at-a.at);return}catch{col=null;E=[];toast('Couldn’t reach saved data, working on this device only.',1)}}
+ try{const l=JSON.parse(localStorage.getItem('remember')||'{}');E=l.E||[];S={...S,...(l.S||{})}}catch{}
+}
+async function save(e){
+ if(e){const i=E.findIndex(x=>x.id===e.id);i<0?E.unshift(e):E[i]=e}
+ if(col){try{await col.doc(e?e.id:'settings').set(clean(e||S))}catch{toast('Couldn’t save just now. Please try again.',1)}}else ls();
+}
+/* ---------- FSRS-5 scheduler (default weights, 90% target retention) ---------- */
+const w=[.4072,1.1829,3.1262,15.4722,7.2102,.5316,1.0651,.0234,1.616,.1544,1.0824,1.9813,.0953,.2975,2.2042,.2407,2.9466,.5034,.6567],F=19/81,C=-.5;
+const cl=(x,a,b)=>Math.min(b,Math.max(a,x)),Rt=(t,s)=>Math.pow(1+F*t/s,C),D0=g=>cl(w[4]-Math.exp(w[5]*(g-1))+1,1,10);
+const ret=e=>e.f?Rt((Date.now()-e.f.last)/DAY,e.f.s):0;
+function sched(e,g){
+ const n=Date.now();let f=e.f;
+ if(!f)f={s:Math.max(.1,w[g-1]),d:D0(g),reps:0,lapses:0,last:n};
+ else{const r=Rt(Math.max(0,(n-f.last)/DAY),f.s);
+  f.d=cl(w[7]*D0(4)+(1-w[7])*(f.d-w[6]*(g-3)),1,10);
+  if(g===1){f.s=Math.min(f.s,w[11]*Math.pow(f.d,-w[12])*(Math.pow(f.s+1,w[13])-1)*Math.exp(w[14]*(1-r)));f.lapses++}
+  else f.s*=1+Math.exp(w[8])*(11-f.d)*Math.pow(f.s,-w[9])*(Math.exp(w[10]*(1-r))-1)*(g===2?w[15]:1)*(g===4?w[16]:1);
+  f.s=Math.max(.1,f.s)}
+ f.reps++;f.last=n;f.due=g===1?n+6e5:n+Math.max(1,Math.round(f.s))*DAY;
+ e.f=f;(e.h=e.h||[]).push([n,g]);
+}
+const ready=e=>e.meaning||e.detail;
+function queue(){
+ const n=Date.now(),sd=new Date().setHours(0,0,0,0);
+ const d=E.filter(e=>ready(e)&&e.f&&e.f.due<=n).sort((a,b)=>ret(a)-ret(b)).slice(0,12);
+ const used=E.filter(e=>e.h&&e.h[0]&&e.h[0][0]>=sd).length;
+ const nw=E.filter(e=>ready(e)&&!e.f).reverse().slice(0,Math.max(0,5-used));
+ const o=[];let i=0,j=0;
+ while(i<d.length||j<nw.length){for(let k=0;k<2&&i<d.length;k++)o.push(d[i++]);if(j<nw.length)o.push(nw[j++])}
+ return o;
+}
+/* ---------- AI enrichment (Claude via the viewer, no keys in the page) ---------- */
+const P='';
+const arr=x=>Array.isArray(x)?x.map(String).filter(Boolean):[];
+const mk=(o,raw)=>({id:'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:Date.now(),raw:String(o.raw||raw||''),term:String(o.term||raw||''),type:o.type||'word',category:o.category||'General',meaning:o.meaning||'',detail:o.detail||'',pos:o.pos||'',synonyms:arr(o.synonyms),antonyms:arr(o.antonyms),differs:o.differs||'',examples:arr(o.examples),contexts:o.contexts||'',mistakes:o.mistakes||'',memory:o.memory||'',practical:o.practical||'',cloze:o.cloze||'',wrong:arr(o.wrong),senses:arr(o.senses),uncertain:!!o.uncertain,h:[]});
+const local=l=>{const m=l.match(/^(.+?)\s+[-–—]\s+(.+)$/)||l.match(/^([^:=]+?)\s*[:=]\s*(.+)$/);return m?{term:m[1].trim(),meaning:m[2].trim(),raw:l}:{term:l,raw:l,type:l.split(/\s+/).length>3?'phrase':'word'}};
+const why=x=>x?.code==='passcode'?'The passcode was wrong.':x?.code==='offline'?'You appear to be offline.':x?.code==='rate_limited'?'Claude is busy right now.':'The AI step didn’t complete.';
+/* ---------- views ---------- */
+const greet=()=>{const h=new Date().getHours();return h<12?'Good morning.':h<18?'Good afternoon.':'Good evening.'};
+const state=e=>!e.f?'New':e.f.s>=21?'Strong':'Learning';
+const hard=e=>e.f&&(e.f.lapses>=2||e.f.d>=7||(e.h.length&&e.h[e.h.length-1][1]<=2));
+const row=e=>`<button class="item" data-a="open" data-id="${e.id}"><span class="t">${esc(e.term)}</span><span class="m">${esc(e.meaning||(e.pending?'':'Needs a meaning'))}</span><i>${state(e)}</i></button>`;
+function list(){
+ let a=E.slice();const s=q.trim().toLowerCase();
+ if(filter==='recent')a=a.filter(e=>Date.now()-e.at<7*DAY);else if(filter==='hard')a=a.filter(hard);else if(filter==='learned')a=a.filter(e=>e.f&&e.f.s>=21);else if(filter.startsWith('c:'))a=a.filter(e=>e.category===filter.slice(2));
+ if(s)a=a.filter(e=>JSON.stringify([e.term,e.meaning,e.detail,e.synonyms,e.category,e.raw,e.examples]).toLowerCase().includes(s));
+ return a.length?a.map(row).join(''):`<p class="mut">${E.length?'Nothing matches.':'Your collection will grow here as you add things.'}</p>`;
+}
+function render(){
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+ const m=$('#main');m.style.animation='none';void m.offsetWidth;m.style.animation='';
+ if(view==='home'){const n=queue().length;
+  m.innerHTML=`<div class="row"><span></span><button class="x" data-a="settings">Settings</button></div><h1>${greet()}</h1><p class="sub">What did you learn today?</p>
+  <button class="btn big" data-a="add">＋ Add something</button>
+  <div class="card row"><div><b>Today’s revision</b><div class="mut">${n?`${n} ${n==1?'item is':'items are'} ready. Your little learning session is waiting.`:'Nothing due. Enjoy your day.'}</div></div>${n?'<button class="btn" data-a="start">Start</button>':''}</div>
+  <h3>Recently added</h3>${E.length?E.slice(0,4).map(row).join(''):'<p class="mut">Nothing yet. Add the first thing you learn.</p>'}`}
+ else if(view==='coll'){const cats=[...new Set(E.map(e=>e.category))].slice(0,8);
+  const ch=[['all','All'],['recent','Recent'],['hard','Difficult'],['learned','Learned'],...cats.map(c=>['c:'+c,c])];
+  m.innerHTML=`<div class="row"><h2>My Collection</h2><button class="btn" data-a="add">＋ Add</button></div><div style="margin-top:14px"><input id="q" placeholder="Search everything you’ve saved" value="${esc(q)}"></div>
+  <div class="chips">${ch.map(c=>`<button class="chip ${filter===c[0]?'on':''}" data-a="filt" data-f="${esc(c[0])}">${esc(c[1])}</button>`).join('')}</div><div id="list">${list()}</div>`;
+  $('#q').oninput=ev=>{q=ev.target.value;$('#list').innerHTML=list()}}
+ else rev();
+}
+/* ---------- review ---------- */
+const sh=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+const others=(e,k,f)=>sh(E.filter(x=>x.id!==e.id&&f(x))).slice(0,k);
+function pick(e){
+ if(!e.f)return 'mcq';
+ const o=['recall','recall'];
+ if(e.type==='concept')o.push('explain','explain');
+ if(e.cloze)o.push('cloze');
+ if(['word','phrase','idiom'].includes(e.type)&&e.examples.length)o.push('sentence');
+ if(e.synonyms.length&&E.length>=4)o.push('syn');
+ o.push('mcq');return o[Math.floor(Math.random()*o.length)];
+}
+function setup(){
+ const e=RV.q[RV.i];if(!e){RV.cur=null;return}
+ let t=pick(e),opts=[];
+ if(t==='mcq'){const wr=e.wrong.length>=3?e.wrong.slice(0,3):others(e,3,x=>x.meaning).map(x=>x.meaning);if(wr.length<3)t='recall';else opts=sh([{t:e.meaning||e.detail,ok:1},...wr.map(x=>({t:x}))])}
+ if(t==='syn'){const wr=others(e,3,x=>!e.synonyms.includes(x.term)).map(x=>x.term);if(wr.length<3)t='recall';else opts=sh([{t:e.synonyms[Math.floor(Math.random()*e.synonyms.length)],ok:1},...wr.map(x=>({t:x}))])}
+ Object.assign(RV,{cur:e,t,opts,pk:null,show:false,intro:!e.f});
+}
+function rev(){
+ const m=$('#main');
+ if(!RV){const Q=queue();
+  if(!Q.length){const nx=E.filter(e=>e.f).sort((a,b)=>a.f.due-b.f.due)[0];
+   m.innerHTML=`<h2>Review</h2><div class="card"><p class="serif lead" style="margin-top:0">You’re all caught up.</p><p class="mut">${nx?'Next up: '+new Date(nx.f.due).toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short'})+'.':'Add something and it will appear here.'}</p></div>`;return}
+  m.innerHTML=`<h2>Review</h2><div class="card row"><div><b>${Q.length} ready</b><div class="mut">A short, calm session.</div></div><button class="btn" data-a="start">Begin</button></div>`;return}
+ if(!RV.cur){const r=RV;
+  m.innerHTML=`<div class="q"><h1>That’s it for today.</h1><p class="mut">${r.done} reviewed · ${r.ok} remembered.<br>Remember will bring things back when it’s time.</p><button class="btn" data-a="finish" style="margin-top:20px">Done</button></div>`;return}
+ const e=RV.cur,t=RV.t,tot=RV.q.length,term=`<div class="serif term">${esc(e.term)}</div>`;
+ const full=`<div style="text-align:left;margin-top:18px"><p class="lead">${esc(e.meaning)}</p>${e.detail?`<p class="mut">${esc(e.detail)}</p>`:''}${e.examples[0]?`<p class="ex">${esc(e.examples[0])}</p>`:''}${e.memory?`<p class="mut">💡 ${esc(e.memory)}</p>`:''}</div>`;
+ const grade=`<div class="grade"><button class="btn ghost" data-a="g" data-g="1">Forgot</button><button class="btn ghost" data-a="g" data-g="2">Struggled</button><button class="btn" data-a="g" data-g="3">Remembered</button></div>`;
+ let h=`<div class="row"><span class="mut">${RV.i+1} of ${tot}</span><button class="x" data-a="finish">Close</button></div><div class="bar"><i style="width:${RV.i/tot*100}%"></i></div><div class="q">`;
+ if(RV.intro&&!RV.go)h+=`<div class="ask">New</div>${term}${full}<button class="btn" data-a="go" style="margin-top:22px">Test me</button>`;
+ else if(t==='mcq'||t==='syn'){h+=`<div class="ask">${t==='mcq'?'What does this mean?':'Which is closest in meaning?'}</div>${term}<div style="text-align:left">${RV.opts.map((o,i)=>`<button class="opt ${RV.pk!=null?(o.ok?'good':RV.pk===i?'bad':''):''}" data-a="pk" data-i="${i}" ${RV.pk!=null?'disabled':''}>${esc(o.t)}</button>`).join('')}</div>${RV.pk!=null?full+`<button class="btn" data-a="g" data-g="${RV.opts[RV.pk].ok?3:1}" style="margin-top:20px">Continue</button>`:''}`}
+ else{
+  const ask={recall:'What does this mean?',explain:'Explain this in simple words',sentence:'Use it in a sentence of your own',cloze:'Fill the gap'}[t];
+  h+=`<div class="ask">${ask}</div>`;
+  h+=t==='cloze'?`<p class="serif" style="font-size:1.5rem">${esc(e.cloze)}</p>`:term;
+  if(t==='sentence'||t==='explain')h+=`<textarea id="own" placeholder="Write it here…" ${RV.show?'disabled':''}></textarea>`;
+  h+=RV.show?(t==='cloze'?`<p class="serif lead">${esc(e.term)}</p>`:'')+full+grade:`<button class="btn" data-a="show" style="margin-top:18px">Show answer</button>`}
+ m.innerHTML=h+'</div>';
+}
+/* ---------- sheets ---------- */
+const sheet=h=>{$('#sheet').innerHTML=`<div class="panel">${h}</div>`;$('#sheet').classList.add('open')};
+const close=()=>$('#sheet').classList.remove('open');
+const KEYS=[['term','Term','s'],['meaning','Meaning','s'],['detail','Explanation','s'],['synonyms','Synonyms (comma separated)','c'],['antonyms','Antonyms (comma separated)','c'],['examples','Examples (one per line)','n'],['differs','How it differs','s'],['contexts','Contexts','s'],['mistakes','Common mistakes','s'],['memory','Memory hook','s'],['practical','In everyday use','s'],['cloze','Fill-in sentence (use ____)','s'],['category','Category','s']];
+function detail(e){
+ const L=(l,v)=>v&&v.length?`<div class="f"><label>${l}</label><p>${esc(Array.isArray(v)?v.join(' · '):v)}</p></div>`:'';
+ const hs=e.h&&e.h.length?`Reviewed ${e.h.length}× · next ${e.f?new Date(e.f.due).toLocaleDateString():''}`:'Not reviewed yet';
+ return `<div class="row"><h2>${esc(e.term)}</h2><span class="mut">${esc(e.pos||e.type)}</span></div>
+ ${e.uncertain?'<p class="warn">Not fully certain about this one. Worth double-checking.</p>':''}
+ ${!ready(e)?'<p class="warn">Add a meaning (tap Edit) so Remember can quiz you on this.</p>':''}
+ ${e.meaning?`<p class="lead">${esc(e.meaning)}</p>`:''}${L('Explanation',e.detail)}${L('Other meanings',e.senses)}${L('Synonyms',e.synonyms)}${L('Antonyms',e.antonyms)}${L('How it differs',e.differs)}
+ ${e.examples.length?`<div class="f"><label>Examples</label>${e.examples.map(x=>`<p class="ex">${esc(x)}</p>`).join('')}</div>`:''}
+ ${L('Contexts',e.contexts)}${L('Common mistakes',e.mistakes)}${L('Memory hook',e.memory)}${L('In everyday use',e.practical)}${L('What you added',e.raw)}
+ <p class="mut" style="margin-top:18px;font-size:.85rem">${hs}</p>
+ <div class="row" style="margin-top:14px"><button class="btn ghost" data-a="del" data-id="${e.id}">Delete</button><span><button class="btn ghost" data-a="edit" data-id="${e.id}">Edit</button> <button class="btn" data-a="close">Close</button></span></div>`;
+}
+const get=id=>E.find(e=>e.id===id);
+/* ---------- actions ---------- */
+const A={
+ nav:b=>{view=b.dataset.v;if(view!=='rev')RV=null;render()},
+ bg:(b,ev)=>{if(ev.target.id==='sheet')close()},close,
+ filt:b=>{filter=b.dataset.f;render()},
+ open:b=>sheet(detail(get(b.dataset.id))),
+ add:()=>sheet(`<h2>Add</h2><p class="mut">One per line, with its meaning after a dash or colon (e.g. “ephemeral – lasting a very short time”). Add as many as you like.</p><textarea id="addtx" placeholder="Paste or type anything you want to remember…"></textarea><p id="addmsg" class="mut"></p><div class="row"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" id="addbtn" data-a="doadd">Add to Remember</button></div>`),
+ async doadd(){
+  const t=$('#addtx').value.trim();if(!t)return;
+  const lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean),have=new Set(E.map(e=>e.term.toLowerCase()));let n=0,nm=0;
+  for(const l of lines){const o=local(l),e=mk(o,l);if(have.has(e.term.toLowerCase()))continue;have.add(e.term.toLowerCase());if(!e.meaning)nm++;await save(e);n++}
+  close();view='coll';filter='all';q='';render();
+  toast(n?`${n} added.${nm?` ${nm} need a meaning before they can be reviewed.`:''}`:'Those are already in your collection.',nm>0);
+ },
+ edit(b){const e=get(b.dataset.id);sheet(`<h2>Edit</h2>${KEYS.map(([k,l,t])=>{const v=t==='c'?e[k].join(', '):t==='n'?e[k].join('\n'):e[k];return `<div class="f"><label>${l}</label>${t==='n'||k==='detail'?`<textarea id="f_${k}" style="min-height:80px">${esc(v)}</textarea>`:`<input id="f_${k}" value="${esc(v)}">`}</div>`}).join('')}<div class="row" style="margin-top:20px"><button class="btn ghost" data-a="open" data-id="${e.id}">Cancel</button><button class="btn" data-a="saveedit" data-id="${e.id}">Save</button></div>`)},
+ async saveedit(b){const e=get(b.dataset.id);KEYS.forEach(([k,,t])=>{const v=$('#f_'+k).value;e[k]=t==='c'?v.split(',').map(x=>x.trim()).filter(Boolean):t==='n'?v.split('\n').map(x=>x.trim()).filter(Boolean):v.trim()});e.pending=!ready(e);await save(e);sheet(detail(e));render();toast('Saved.')},
+ async del(b){if(b.dataset.s!=='1'){b.dataset.s='1';b.textContent='Tap again to delete';return}
+  const id=b.dataset.id;E=E.filter(e=>e.id!==id);if(col){try{await col.doc(id).delete()}catch{toast('Couldn’t delete just now.',1)}}else ls();close();render()},
+ start(){const Q=queue();if(!Q.length)return;view='rev';RV={q:Q,i:0,done:0,ok:0,rq:new Set()};setup();render()},
+ go(){RV.go=true;render()},show(){RV.show=true;render()},
+ pk(b){RV.pk=+b.dataset.i;render()},
+ async g(b){const e=RV.cur,g=+b.dataset.g;sched(e,g);RV.done++;if(g>1)RV.ok++;
+  if(g===1&&!RV.rq.has(e.id)){RV.rq.add(e.id);RV.q.push(e)}
+  save(e);RV.i++;RV.go=false;setup();render()},
+ finish(){RV=null;view='home';render()},
+ settings(){sheet(`<h2>Settings</h2><div class="f"><label>Daily reminder</label><div class="row"><label style="text-transform:none;letter-spacing:0;font-size:1rem;color:var(--ink)"><input type="checkbox" id="ron" style="width:auto" ${S.remindOn?'checked':''}> Gentle reminder</label><input type="time" id="rat" value="${S.remindAt}" style="width:auto"></div><p class="mut" style="font-size:.85rem">A gentle nudge arrives at this time every day. If it doesn’t show up, make sure notifications are allowed for Remember in your phone’s settings.</p></div>
+  <div class="f"><label>Your data</label><div class="row"><span><button class="btn ghost" data-a="exp">Export</button> <button class="btn ghost" data-a="imp">Restore</button></span><span class="mut" style="font-size:.85rem">${E.length} entries · ${col?'saved to your private space':'saved on this device'}</span></div></div>
+  <div class="row" style="margin-top:22px"><span></span><button class="btn" data-a="saveset">Done</button></div>`)},
+ async saveset(){S.remindOn=$('#ron').checked;S.remindAt=$('#rat').value||'19:00';await save(null);const ok=await remind();close();toast(S.remindOn?(ok?'Reminder set.':'Couldn’t set the reminder. Check that notifications are allowed.'):'Reminder off.',S.remindOn&&!ok)},
+ async exp(){const j=JSON.stringify({entries:E,settings:S},null,1),PL=window.Capacitor&&window.Capacitor.Plugins||{};
+  if(PL.Filesystem&&PL.Share){try{const r=await PL.Filesystem.writeFile({path:'remember-backup.json',data:j,directory:'CACHE',encoding:'utf8'});await PL.Share.share({title:'Remember backup',files:[r.uri]})}catch(x){if(!/cancel/i.test(String(x&&x.message||x)))toast('Couldn’t export.',1)}return}
+  const b=new Blob([j],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='remember-backup.json';a.click()},
+ imp(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=async()=>{try{const j=JSON.parse(await i.files[0].text()),ids=new Set(E.map(e=>e.id));(j.entries||[]).forEach(e=>{if(!ids.has(e.id))E.push(e)});E.sort((a,b)=>b.at-a.at);ls();render();toast('Restored.')}catch{toast('That file didn’t look right.',1)}};i.click()}
+};
+async function remind(){
+ const N=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;if(!N)return false;
+ try{await N.cancel({notifications:[{id:1}]});if(!S.remindOn)return true;
+  const p=await N.requestPermissions();if(p.display!=='granted')return false;
+  const [h,m]=S.remindAt.split(':').map(Number);
+  await N.schedule({notifications:[{id:1,title:'Remember',body:'Your little learning session is waiting.',schedule:{on:{hour:h,minute:m},allowWhileIdle:true}}]});return true}catch{return false}
+}
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(b&&A[b.dataset.a])A[b.dataset.a](b,ev)});
+function ping(){if(!S.remindOn||!window.Notification||Notification.permission!=='granted')return;const d=new Date(),k=d.toDateString(),[h,m]=S.remindAt.split(':');
+ if(S.last!==k&&d>=new Date(new Date().setHours(+h,+m,0,0))&&queue().length){S.last=k;save(null);new Notification('Remember',{body:'Your little learning session is waiting.'})}}
+init();
+</script></body></html>

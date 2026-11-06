@@ -88,11 +88,19 @@ function queue(){
  return o;
 }
 /* ---------- AI enrichment (Claude via the viewer, no keys in the page) ---------- */
-const P='';
+const P="You are the enrichment engine of a personal learning app. The input is raw text a learner wants to remember. It may hold several entries (words, phrases, idioms, concepts, notes), possibly with the learner's own meaning (\"term - meaning\"). Return ONLY a JSON array, one object per entry:\n{\"raw\":\"the entry's original text exactly\",\"term\":\"\",\"type\":\"word|phrase|idiom|concept\",\"category\":\"1-2 words, e.g. Vocabulary, Idioms, Accounting\",\"meaning\":\"simplest accurate meaning (keep the learner's own meaning if given)\",\"detail\":\"fuller explanation, only if useful\",\"pos\":\"part of speech or ''\",\"synonyms\":[],\"antonyms\":[],\"differs\":\"how it differs from similar words, or ''\",\"examples\":[\"2-3 natural sentences\"],\"contexts\":\"where and how it is used\",\"mistakes\":\"common usage mistakes or ''\",\"memory\":\"one simple memory association\",\"practical\":\"how to use it in everyday conversation or writing\",\"cloze\":\"an example sentence with the term replaced by ____\",\"wrong\":[\"3 plausible but wrong short meanings\"],\"senses\":[\"other meanings if the word has several\"],\"uncertain\":false}\nRules: never invent or guess. If unsure of a meaning, set \"uncertain\":true and say so in detail. Keep everything short and plain. Use [] or \"\" when not applicable (skip synonyms/pos for idioms if unnatural). For concepts, put key characteristics in detail and give a practical example. Input:\n";
 const arr=x=>Array.isArray(x)?x.map(String).filter(Boolean):[];
 const mk=(o,raw)=>({id:'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:Date.now(),raw:String(o.raw||raw||''),term:String(o.term||raw||''),type:o.type||'word',category:o.category||'General',meaning:o.meaning||'',detail:o.detail||'',pos:o.pos||'',synonyms:arr(o.synonyms),antonyms:arr(o.antonyms),differs:o.differs||'',examples:arr(o.examples),contexts:o.contexts||'',mistakes:o.mistakes||'',memory:o.memory||'',practical:o.practical||'',cloze:o.cloze||'',wrong:arr(o.wrong),senses:arr(o.senses),uncertain:!!o.uncertain,h:[]});
 const local=l=>{const m=l.match(/^(.+?)\s+[-–—]\s+(.+)$/)||l.match(/^([^:=]+?)\s*[:=]\s*(.+)$/);return m?{term:m[1].trim(),meaning:m[2].trim(),raw:l}:{term:l,raw:l,type:l.split(/\s+/).length>3?'phrase':'word'}};
-const why=x=>x?.code==='passcode'?'The passcode was wrong.':x?.code==='offline'?'You appear to be offline.':x?.code==='rate_limited'?'Claude is busy right now.':'The AI step didn’t complete.';
+const gk=()=>{try{return localStorage.getItem('remember_gk')||''}catch{return''}};
+async function gem(t){
+ const k=gk();if(!k)throw{code:'nokey'};let r;
+ try{r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(S.model||'gemini-flash-latest')+':generateContent',{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':k},body:JSON.stringify({contents:[{parts:[{text:t}]}],generationConfig:{responseMimeType:'application/json',temperature:.2}})})}catch{throw{code:'offline'}}
+ if([400,403,404].includes(r.status))throw{code:'badkey'};if(r.status===429)throw{code:'limit'};if(!r.ok)throw{code:'ai'};
+ const j=await r.json(),x=((((j.candidates||[])[0]||{}).content||{}).parts||[]).map(p=>p.text||'').join('').replace(/```json|```/g,'').trim();
+ try{const o=JSON.parse(x);return Array.isArray(o)?o:[o]}catch{throw{code:'ai'}}
+}
+const why=x=>({nokey:'Add your Gemini key in Settings to get AI details.',badkey:'Gemini rejected the request. Check your key and model in Settings.',limit:'Free daily limit reached. Try again later.',offline:'You appear to be offline.'}[x&&x.code]||'The AI step didn’t complete.');
 /* ---------- views ---------- */
 const greet=()=>{const h=new Date().getHours();return h<12?'Good morning.':h<18?'Good afternoon.':'Good evening.'};
 const state=e=>!e.f?'New':e.f.s>=21?'Strong':'Learning';
@@ -169,7 +177,7 @@ function detail(e){
  const hs=e.h&&e.h.length?`Reviewed ${e.h.length}× · next ${e.f?new Date(e.f.due).toLocaleDateString():''}`:'Not reviewed yet';
  return `<div class="row"><h2>${esc(e.term)}</h2><span class="mut">${esc(e.pos||e.type)}</span></div>
  ${e.uncertain?'<p class="warn">Not fully certain about this one. Worth double-checking.</p>':''}
- ${!ready(e)?'<p class="warn">Add a meaning (tap Edit) so Remember can quiz you on this.</p>':''}
+ ${!ready(e)?`<p class="warn">No details yet.</p><button class="btn" data-a="enrich" data-id="${e.id}">Generate details</button> <span class="mut">or tap Edit to write your own.</span>`:''}
  ${e.meaning?`<p class="lead">${esc(e.meaning)}</p>`:''}${L('Explanation',e.detail)}${L('Other meanings',e.senses)}${L('Synonyms',e.synonyms)}${L('Antonyms',e.antonyms)}${L('How it differs',e.differs)}
  ${e.examples.length?`<div class="f"><label>Examples</label>${e.examples.map(x=>`<p class="ex">${esc(x)}</p>`).join('')}</div>`:''}
  ${L('Contexts',e.contexts)}${L('Common mistakes',e.mistakes)}${L('Memory hook',e.memory)}${L('In everyday use',e.practical)}${L('What you added',e.raw)}
@@ -183,14 +191,21 @@ const A={
  bg:(b,ev)=>{if(ev.target.id==='sheet')close()},close,
  filt:b=>{filter=b.dataset.f;render()},
  open:b=>sheet(detail(get(b.dataset.id))),
- add:()=>sheet(`<h2>Add</h2><p class="mut">One per line, with its meaning after a dash or colon (e.g. “ephemeral – lasting a very short time”). Add as many as you like.</p><textarea id="addtx" placeholder="Paste or type anything you want to remember…"></textarea><p id="addmsg" class="mut"></p><div class="row"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" id="addbtn" data-a="doadd">Add to Remember</button></div>`),
+ add:()=>sheet(`<h2>Add</h2><p class="mut">One per line. A meaning is optional (“ephemeral – short-lived”). With your Gemini key set in Settings, Remember fills in the rest.</p><textarea id="addtx" placeholder="Paste or type anything you want to remember…"></textarea><p id="addmsg" class="mut"></p><div class="row"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" id="addbtn" data-a="doadd">Add to Remember</button></div>`),
  async doadd(){
-  const t=$('#addtx').value.trim();if(!t)return;
-  const lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean),have=new Set(E.map(e=>e.term.toLowerCase()));let n=0,nm=0;
-  for(const l of lines){const o=local(l),e=mk(o,l);if(have.has(e.term.toLowerCase()))continue;have.add(e.term.toLowerCase());if(!e.meaning)nm++;await save(e);n++}
+  const t=$('#addtx').value.trim();if(!t)return;const btn=$('#addbtn'),msg=x=>$('#addmsg').textContent=x;btn.disabled=true;
+  const lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean),made=[];let note='',plain=0,dead=false;
+  for(let i=0;i<lines.length;i+=6){const ch=lines.slice(i,i+6);let got=null;
+   if(!dead){try{msg(`Organising ${Math.min(i+6,lines.length)} of ${lines.length}…`);got=await gem(P+ch.join('\n'))}catch(x){note=why(x);dead=true}}
+   if(!got){plain+=ch.length;got=ch.map(local)}
+   got.forEach((o,k)=>made.push(mk(o,ch[k])));}
+  const have=new Set(E.map(e=>e.term.toLowerCase()));let n=0;
+  for(const e of made){if(have.has(e.term.toLowerCase()))continue;have.add(e.term.toLowerCase());await save(e);n++}
   close();view='coll';filter='all';q='';render();
-  toast(n?`${n} added.${nm?` ${nm} need a meaning before they can be reviewed.`:''}`:'Those are already in your collection.',nm>0);
+  toast(n?`${n} added.${plain?' Saved without AI details. '+note+' Open an entry to retry.':''}`:'Those are already in your collection.',plain>0);
  },
+ async enrich(b){const e=get(b.dataset.id);b.disabled=true;b.textContent='Working…';
+  try{const r=await gem(P+e.raw),n=mk(r[0]||{},e.raw);Object.assign(e,n,{id:e.id,at:e.at,h:e.h,f:e.f,term:e.term||n.term,meaning:e.meaning||n.meaning});await save(e);sheet(detail(e));render()}catch(x){toast(why(x),1);b.disabled=false;b.textContent='Generate details'}},
  edit(b){const e=get(b.dataset.id);sheet(`<h2>Edit</h2>${KEYS.map(([k,l,t])=>{const v=t==='c'?e[k].join(', '):t==='n'?e[k].join('\n'):e[k];return `<div class="f"><label>${l}</label>${t==='n'||k==='detail'?`<textarea id="f_${k}" style="min-height:80px">${esc(v)}</textarea>`:`<input id="f_${k}" value="${esc(v)}">`}</div>`}).join('')}<div class="row" style="margin-top:20px"><button class="btn ghost" data-a="open" data-id="${e.id}">Cancel</button><button class="btn" data-a="saveedit" data-id="${e.id}">Save</button></div>`)},
  async saveedit(b){const e=get(b.dataset.id);KEYS.forEach(([k,,t])=>{const v=$('#f_'+k).value;e[k]=t==='c'?v.split(',').map(x=>x.trim()).filter(Boolean):t==='n'?v.split('\n').map(x=>x.trim()).filter(Boolean):v.trim()});e.pending=!ready(e);await save(e);sheet(detail(e));render();toast('Saved.')},
  async del(b){if(b.dataset.s!=='1'){b.dataset.s='1';b.textContent='Tap again to delete';return}
@@ -203,9 +218,9 @@ const A={
   save(e);RV.i++;RV.go=false;setup();render()},
  finish(){RV=null;view='home';render()},
  settings(){sheet(`<h2>Settings</h2><div class="f"><label>Daily reminder</label><div class="row"><label style="text-transform:none;letter-spacing:0;font-size:1rem;color:var(--ink)"><input type="checkbox" id="ron" style="width:auto" ${S.remindOn?'checked':''}> Gentle reminder</label><input type="time" id="rat" value="${S.remindAt}" style="width:auto"></div><p class="mut" style="font-size:.85rem">A gentle nudge arrives at this time every day. If it doesn’t show up, make sure notifications are allowed for Remember in your phone’s settings.</p></div>
-  <div class="f"><label>Your data</label><div class="row"><span><button class="btn ghost" data-a="exp">Export</button> <button class="btn ghost" data-a="imp">Restore</button></span><span class="mut" style="font-size:.85rem">${E.length} entries · ${col?'saved to your private space':'saved on this device'}</span></div></div>
+  <div class="f"><label>Gemini key (for AI details)</label><input id="gk" type="password" placeholder="Paste your key" value="${esc(gk())}" autocomplete="off"><input id="gm" value="${esc(S.model||'gemini-flash-latest')}" style="margin-top:8px"><p class="mut" style="font-size:.85rem">Stored only on this phone. Free key at aistudio.google.com.</p></div><div class="f"><label>Your data</label><div class="row"><span><button class="btn ghost" data-a="exp">Export</button> <button class="btn ghost" data-a="imp">Restore</button></span><span class="mut" style="font-size:.85rem">${E.length} entries · ${col?'saved to your private space':'saved on this device'}</span></div></div>
   <div class="row" style="margin-top:22px"><span></span><button class="btn" data-a="saveset">Done</button></div>`)},
- async saveset(){S.remindOn=$('#ron').checked;S.remindAt=$('#rat').value||'19:00';await save(null);const ok=await remind();close();toast(S.remindOn?(ok?'Reminder set.':'Couldn’t set the reminder. Check that notifications are allowed.'):'Reminder off.',S.remindOn&&!ok)},
+ async saveset(){S.remindOn=$('#ron').checked;try{localStorage.setItem('remember_gk',$('#gk').value.trim())}catch{}S.model=$('#gm').value.trim()||'gemini-flash-latest';S.remindAt=$('#rat').value||'19:00';await save(null);const ok=await remind();close();toast(S.remindOn?(ok?'Reminder set.':'Couldn’t set the reminder. Check that notifications are allowed.'):'Reminder off.',S.remindOn&&!ok)},
  async exp(){const j=JSON.stringify({entries:E,settings:S},null,1),PL=window.Capacitor&&window.Capacitor.Plugins||{};
   if(PL.Filesystem&&PL.Share){try{const r=await PL.Filesystem.writeFile({path:'remember-backup.json',data:j,directory:'CACHE',encoding:'utf8'});await PL.Share.share({title:'Remember backup',files:[r.uri]})}catch(x){if(!/cancel/i.test(String(x&&x.message||x)))toast('Couldn’t export.',1)}return}
   const b=new Blob([j],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='remember-backup.json';a.click()},
